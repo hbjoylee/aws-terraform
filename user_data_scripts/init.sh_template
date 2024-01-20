@@ -1,0 +1,35 @@
+#!/bin/bash
+sudo apt update
+sudo apt install bc awscli -y 
+cat << 'EOF' > /root/report_load_metrics.sh
+#!/bin/bash
+#load average
+
+load_5min=$(cat /proc/loadavg | awk '{print $2;}')
+cpu_threads=`grep 'model name' /proc/cpuinfo | wc -l`
+
+load_in_percent=`echo "scale=1; ${load_5min} * 100 / ${cpu_threads}"|bc` 
+echo "local_in_percent: ${load_in_percent}"
+
+# write load to cloud watch 
+export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
+aws cloudwatch put-metric-data \
+ --namespace ServerLoad \
+ --metric-name LoadAverage5min  \
+ --value ${load_in_percent} --unit Percent \
+ --dimensions AutoScalingGroupName=${ASG_NAME}
+EOF
+
+
+chmod +x /root/report_load_metrics.sh
+
+# add cront job 
+#write out current crontab
+crontab -l > mycron
+#echo new cron into cron file
+echo "*/1 * * * * /bin/bash /root/report_load_metrics.sh" >> mycron
+#install new cron file
+crontab mycron
+rm mycron

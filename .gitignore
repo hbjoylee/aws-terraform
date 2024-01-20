@@ -2,6 +2,8 @@ plan.sh
 apply.sh
 tfplan 
 destroy.sh
+user_data_scripts/init.sh
+refresh_asg_instance.zip
 
 
 # Local .terraform directories

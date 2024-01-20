@@ -94,14 +94,14 @@ resource "aws_launch_template" "default" {
   network_interfaces {
     associate_public_ip_address = true
   }
+  user_data = filebase64("${path.module}/user_data_scripts/init.sh")
 }
 
 resource "aws_autoscaling_group" "asg" {
   min_size         = 2
   max_size         = 5
   desired_capacity = 2
-  name_prefix      = "myasg-"
-  # availability_zones  = data.aws_availability_zones.available.names
+  name             = var.asg_name
 
   vpc_zone_identifier = module.vpc.public_subnets
   # Launch template
@@ -112,7 +112,7 @@ resource "aws_autoscaling_group" "asg" {
 
   tag {
     key                 = "Name"
-    value               = "example-asg"
+    value               = var.asg_name
     propagate_at_launch = true
   }
 }

@@ -1,0 +1,7 @@
+export AWS_ACCESS_KEY_ID="KEY"
+export AWS_SECRET_ACCESS_KEY="SECRET"
+export AWS_DEFAULT_REGION="ap-southeast-2"
+# replace 
+export ASG_NAME="test_asg"
+envsubst '$ASG_NAME,$AWS_ACCESS_KEY_ID,$AWS_SECRET_ACCESS_KEY,$AWS_DEFAULT_REGION' < user_data_scripts/init.sh_template > user_data_scripts/init.sh
+terraform plan --var asg_name=${ASG_NAME} -out=tfplan
